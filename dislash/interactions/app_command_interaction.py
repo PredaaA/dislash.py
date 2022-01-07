@@ -431,6 +431,11 @@ class ContextMenuInteraction(BaseInteraction):
         )
 
     @property
+    def full_command(self):
+        """Returns the command name."""
+        return self.data.name
+
+    @property
     def target(self):
         return self.data.target
 
