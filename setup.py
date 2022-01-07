@@ -11,7 +11,7 @@ with open('dislash/__init__.py', 'r') as f:
 
 setup(
     name='dislash.py',
-    version=version,
+    version=version + "_martine",
     description='A python wrapper for message components and application commands.',
     long_description=long_description,
     long_description_content_type='text/markdown',
