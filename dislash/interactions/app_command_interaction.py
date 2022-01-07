@@ -389,15 +389,11 @@ class SlashInteraction(BaseInteraction):
     @property
     def full_command(self):
         """Returns the command name followed by subcommands if any."""
-
-        def get_sub(options):
-            return [k for k in options if k.value is None]
-
         data = self.data.options.values()
         final = []
         all_found = False
         while all_found is False:
-            vals = get_sub(data)
+            vals = [k for k in data if k.value is None]
             if vals:
                 final.append(vals[0])
                 data = vals[0].options.values()
@@ -432,28 +428,6 @@ class ContextMenuInteraction(BaseInteraction):
         return (
             f"<ContextMenuInteraction id={self.id} guild={self.guild!r} "
             f"channel={self.channel!r} author={self.author!r} data={self.data!r}>"
-        )
-
-    @property
-    def full_command(self):
-        """Returns the command name followed by subcommands if any."""
-
-        def get_sub(options):
-            return [k for k in options if k.value is None]
-
-        data = self.data.options.values()
-        final = []
-        all_found = False
-        while all_found is False:
-            vals = get_sub(data)
-            if vals:
-                final.append(vals[0])
-                data = vals[0].options.values()
-            else:
-                all_found = True
-
-        return self.data.name + (
-            "_" + "_".join([option.name for option in final]) if final else ""
         )
 
     @property
