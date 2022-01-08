@@ -304,7 +304,7 @@ class BaseInteraction:
         data: Any = {}
 
         if type == 8:
-            data["choices"] = [{choice: choice} for choice in _autocomplete_choices]
+            data["choices"] = [{"name": choice, "value": choice} for choice in _autocomplete_choices]
         else:
             if content is not None:
                 data["content"] = str(content)
