@@ -400,6 +400,7 @@ class SlashInteraction(BaseInteraction):
 
         state = client._connection
         self.prefix: str = "/"  # Just in case
+        self.clean_prefix = "/"
         self.data = SlashInteractionData(
             data=payload.get("data", {}), guild=self.guild, state=state
         )
