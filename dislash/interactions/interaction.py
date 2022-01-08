@@ -14,6 +14,28 @@ from .message_components import ActionRow
 __all__ = ("InteractionType", "ResponseType", "BaseInteraction")
 
 
+class MockTyping:
+    """Just a empty class to mock discord.py's typing in context."""
+
+    def __init__(self, messageable=None):
+        ...
+
+    async def do_typing(self):
+        ...
+
+    def __enter__(self):
+        ...
+
+    def __exit__(self, exc_type, exc, tb):
+        ...
+
+    async def __aenter__(self):
+        ...
+
+    async def __aexit__(self, exc_type, exc, tb):
+        ...
+
+
 class InteractionType(int, Enum):
     Ping = 1
     ApplicationCommand = 2
@@ -667,3 +689,6 @@ class BaseInteraction:
     send = reply
 
     respond = create_response
+
+
+BaseInteraction.typing = MockTyping
