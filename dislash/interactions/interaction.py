@@ -266,6 +266,7 @@ class BaseInteraction:
         ephemeral: bool = False,
         tts: bool = False,
         allowed_mentions=None,
+        _autocomplete_choices=None
     ):
         """
         Creates an interaction response.
@@ -300,60 +301,63 @@ class BaseInteraction:
             Both ``embed`` and ``embeds`` are specified
         """
         type = type or 4
-
         data: Any = {}
-        if content is not None:
-            data["content"] = str(content)
 
-        if embed is not None and embeds is not None:
-            raise discord.InvalidArgument("Can't pass both embed and embeds")
-
-        if embed is not None:
-            if not isinstance(embed, discord.Embed):
-                raise discord.InvalidArgument("embed parameter must be discord.Embed")
-            data["embeds"] = [embed.to_dict()]
-
-        elif embeds is not None:
-            if len(embeds) > 10:
-                raise discord.InvalidArgument("embds parameter must be a list of up to 10 elements")
-            elif not all(isinstance(embed, discord.Embed) for embed in embeds):
-                raise discord.InvalidArgument("embeds parameter must be a list of discord.Embed")
-            data["embeds"] = [embed.to_dict() for embed in embeds]
-
-        if view is not None:
-            if not hasattr(view, "__discord_ui_view__"):
-                raise discord.InvalidArgument(f"view parameter must be View not {view.__class__!r}")
-
-            _components = view.to_components()
+        if type == 8:
+            data["choices"] = [{choice: choice} for choice in _autocomplete_choices]
         else:
-            _components = None
+            if content is not None:
+                data["content"] = str(content)
 
-        if components is not None:
-            if len(components) > 5:
-                raise discord.InvalidArgument("components must be a list of up to 5 action rows")
-            _components = _components or []
-            for comp in components:
-                if isinstance(comp, ActionRow):
-                    _components.append(comp.to_dict())
-                else:
-                    _components.append(ActionRow(comp).to_dict())
+            if embed is not None and embeds is not None:
+                raise discord.InvalidArgument("Can't pass both embed and embeds")
 
-        if _components is not None:
-            data["components"] = _components
+            if embed is not None:
+                if not isinstance(embed, discord.Embed):
+                    raise discord.InvalidArgument("embed parameter must be discord.Embed")
+                data["embeds"] = [embed.to_dict()]
 
-        if content or embed or embeds:
-            state = self.bot._connection
-            if allowed_mentions is not None:
-                if state.allowed_mentions is not None:
-                    allowed_mentions = state.allowed_mentions.merge(allowed_mentions).to_dict()
-                else:
-                    allowed_mentions = allowed_mentions.to_dict()
-                data["allowed_mentions"] = allowed_mentions
+            elif embeds is not None:
+                if len(embeds) > 10:
+                    raise discord.InvalidArgument("embds parameter must be a list of up to 10 elements")
+                elif not all(isinstance(embed, discord.Embed) for embed in embeds):
+                    raise discord.InvalidArgument("embeds parameter must be a list of discord.Embed")
+                data["embeds"] = [embed.to_dict() for embed in embeds]
 
-        if ephemeral:
-            data["flags"] = 64
-        if tts:
-            data["tts"] = True
+            if view is not None:
+                if not hasattr(view, "__discord_ui_view__"):
+                    raise discord.InvalidArgument(f"view parameter must be View not {view.__class__!r}")
+
+                _components = view.to_components()
+            else:
+                _components = None
+
+            if components is not None:
+                if len(components) > 5:
+                    raise discord.InvalidArgument("components must be a list of up to 5 action rows")
+                _components = _components or []
+                for comp in components:
+                    if isinstance(comp, ActionRow):
+                        _components.append(comp.to_dict())
+                    else:
+                        _components.append(ActionRow(comp).to_dict())
+
+            if _components is not None:
+                data["components"] = _components
+
+            if content or embed or embeds:
+                state = self.bot._connection
+                if allowed_mentions is not None:
+                    if state.allowed_mentions is not None:
+                        allowed_mentions = state.allowed_mentions.merge(allowed_mentions).to_dict()
+                    else:
+                        allowed_mentions = allowed_mentions.to_dict()
+                    data["allowed_mentions"] = allowed_mentions
+
+            if ephemeral:
+                data["flags"] = 64
+            if tts:
+                data["tts"] = True
 
         payload: Dict[str, Any] = {"type": type}
         if data:

@@ -129,6 +129,7 @@ class InteractionDataOption:
         self.options: Dict[str, InteractionDataOption] = {
             o["name"]: InteractionDataOption(data=o, resolved=resolved) for o in data.get("options", [])
         }
+        self.focused: bool = data.get("focused", False)
 
     def __repr__(self):
         return "<InteractionDataOption name='{0.name}' value={0.value} options={0.options}>".format(self)
@@ -146,6 +147,15 @@ class InteractionDataOption:
         opt = self.option_at(0)
         if opt is not None and opt.type == 1:
             return opt
+        
+        return None
+
+    def get_focused_option(self) -> Optional[InteractionDataOption]:
+        for option in self.options.values():
+            if option.focused:
+                return option
+            if option.value is None:
+                return option.get_focused_option()
         
         return None
 
@@ -258,6 +268,15 @@ class SlashInteractionData(ApplicationCommandInteractionData):
         opt = self.option_at(0)
         if opt is not None and opt.type == 2:
             return opt
+
+    def get_focused_option(self) -> Optional[InteractionDataOption]:
+        for option in self.options.values():
+            if option.focused:
+                return option
+            if option.value is None:
+                return option.get_focused_option()
+        
+        return None
 
     def get_option(self, name: str) -> Optional[InteractionDataOption]:
         """

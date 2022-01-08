@@ -88,6 +88,8 @@ class Option:
         the option type, e.g. ``Type.USER``, see :ref:`option_type`
     required : :class:`bool`
         whether this option is required or not
+    autocomplete : :class:`bool`
+        enable autocomplete interactions for this option
     choices : List[:class:`OptionChoice`]
         the list of option choices, type :ref:`option_choice`
     options : List[:class:`Option`]
@@ -95,13 +97,14 @@ class Option:
         the ``type`` is :class:`Type.SUB_COMMAND` or :class:`Type.SUB_COMMAND_GROUP`
     """
 
-    __slots__ = ("name", "description", "type", "required", "choices", "options", "_choice_connectors")
+    __slots__ = ("name", "description", "type", "required", "autocomplete", "choices", "options", "_choice_connectors")
 
     name: str
     description: Optional[str]
     type: int
     required: bool
-    choices: List[OptionChoice]
+    autocomplete: bool
+    choices: List[Union[OptionChoice, str]]
     options: List[Option]
 
     def __init__(
@@ -110,6 +113,7 @@ class Option:
         description: Optional[str] = None,
         type: int = 3,
         required: bool = False,
+        autocomplete: bool = False,
         choices: Optional[List[OptionChoice]] = None,
         options: Optional[List[Option]] = None,
     ) -> None:
@@ -118,6 +122,7 @@ class Option:
         self.description = description
         self.type = type
         self.required = required
+        self.autocomplete = autocomplete
         self.choices = choices or []
         if options is not None:
             if self.type == 1:
@@ -132,6 +137,8 @@ class Option:
         self._choice_connectors: Dict[Union[int, str], Any] = {}
         # Wrap choices
         for i, choice in enumerate(self.choices):
+            if isinstance(choice, str):
+                choice = OptionChoice(choice, choice)
             if self.type == Type.INTEGER:
                 if not isinstance(choice.value, int):
                     self._choice_connectors[i] = choice.value
@@ -156,6 +163,7 @@ class Option:
             and self.description == other.description
             and self.type == other.type
             and self.required == other.required
+            and self.autocomplete == other.autocomplete
             and self.choices == other.choices
             and self.options == other.options
         )
@@ -167,6 +175,7 @@ class Option:
             description=payload["description"],
             type=payload["type"],
             required=payload.get("required", False),
+            autocomplete=payload.get("autocomplete", False),
             options=[
                 Option.from_dict(p) for p
                 in payload.get("options", ())
@@ -183,6 +192,9 @@ class Option:
 
         Parameters are the same as for :class:`OptionChoice`
         """
+        if self.autocomplete is True:
+            return
+
         # Wrap the value
         true_value = value
         if self.type == Type.STRING:
@@ -202,6 +214,7 @@ class Option:
         description: Optional[str] = None,
         type: int = 3,
         required: bool = False,
+        autocomplete: bool = False,
         choices: Optional[List[OptionChoice]] = None,
         options: Optional[List[Option]] = None,
     ) -> None:
@@ -217,7 +230,7 @@ class Option:
             if type != 1:
                 raise ValueError("Expected sub_command in this sub_command_group")
         self.options.append(
-            Option(name=name, description=description, type=type, required=required, choices=choices, options=options)
+            Option(name=name, description=description, type=type, required=required, autocomplete=autocomplete, choices=choices, options=options)
         )
 
     def to_dict(self) -> OptionPayload:
@@ -226,10 +239,13 @@ class Option:
             description=self.description,
             type=self.type,
             required=self.required,
+            autocomplete=self.autocomplete,
             choices=[
                 OptionChoicePayload(name=choice.name, value=choice.value)
                 for choice in self.choices
-            ],
+            ]
+            if self.autocomplete is False
+            else [],
             options=[
                 option.to_dict() for
                 option in self.options

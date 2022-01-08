@@ -1400,6 +1400,17 @@ class InteractionClient:
                 self.dispatch("button_click", inter)
             elif inter.component.type == ComponentType.SelectMenu:
                 self.dispatch("dropdown", inter)
+        # Autocomplete
+        elif _type == 4:
+            inter = SlashInteraction(self.client, payload)
+            option = inter.data.get_focused_option()
+            if (cmd := self.slash_commands.get(inter.data.name)) is not None:
+                for cmd_option in cmd.options:
+                    if cmd_option.name == option.name:
+                        choices = [choice for choice in cmd_option.choices if option.value.lower() in choice.lower()]
+                        await inter.create_response(type=8, _autocomplete_choices=choices[:25])
+                        self.dispatch("app_command_autocomplete", inter)
+                        break
 
     async def _fill_app_id(self):
         data = await self.client.http.application_info()

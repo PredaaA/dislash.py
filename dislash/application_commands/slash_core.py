@@ -227,6 +227,7 @@ class CommandParent(BaseSlashCommand):
                 self.connectors = connectors
 
         self.children: Dict[str, Union[SubCommand, SubCommandGroup]] = {}
+        self.options = options
         self.auto_sync = auto_sync
         self.registerable = SlashCommand(
             name=self.name,
