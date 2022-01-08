@@ -18,7 +18,12 @@ from ..interactions import (
     application_command_factory,
 )
 from ._decohub import _HANDLER
-from .context_menus_core import InvokableMessageCommand, InvokableUserCommand, message_command, user_command
+from .context_menus_core import (
+    InvokableMessageCommand,
+    InvokableUserCommand,
+    message_command,
+    user_command,
+)
 from .slash_core import CommandParent, slash_command
 from .utils import ClickListener, _on_button_click
 
@@ -259,7 +264,9 @@ class InteractionClient:
 
     @property
     def commands(self) -> Dict[str, CommandParent]:
-        return dict(**_HANDLER.slash_commands, **_HANDLER.user_commands, **_HANDLER.message_commands)
+        return dict(
+            **_HANDLER.slash_commands, **_HANDLER.user_commands, **_HANDLER.message_commands
+        )
 
     @property
     def global_commands(self) -> List[ApplicationCommand]:
@@ -286,7 +293,9 @@ class InteractionClient:
             self.events[name] = func
         return func
 
-    def slash_command(self, *args, **kwargs) -> Callable[[Callable[..., Awaitable]], CommandParent]:
+    def slash_command(
+        self, *args, **kwargs
+    ) -> Callable[[Callable[..., Awaitable]], CommandParent]:
         """
         A decorator that allows to build a slash command.
 
@@ -313,10 +322,14 @@ class InteractionClient:
         """
         return slash_command(*args, **kwargs)
 
-    def user_command(self, *args, **kwargs) -> Callable[[Callable[..., Awaitable]], InvokableUserCommand]:
+    def user_command(
+        self, *args, **kwargs
+    ) -> Callable[[Callable[..., Awaitable]], InvokableUserCommand]:
         return user_command(*args, **kwargs)
 
-    def message_command(self, *args, **kwargs) -> Callable[[Callable[..., Awaitable]], InvokableMessageCommand]:
+    def message_command(
+        self, *args, **kwargs
+    ) -> Callable[[Callable[..., Awaitable]], InvokableMessageCommand]:
         return message_command(*args, **kwargs)
 
     # Getters
@@ -429,7 +442,11 @@ class InteractionClient:
         global_commands : List[ApplicationCommand]
         """
         data = await self.client.http.request(
-            Route("GET", "/applications/{application_id}/commands", application_id=self.application_id)
+            Route(
+                "GET",
+                "/applications/{application_id}/commands",
+                application_id=self.application_id,
+            )
         )
         return [application_command_factory(dat) for dat in data]
 
@@ -520,7 +537,11 @@ class InteractionClient:
         if not isinstance(app_command, ApplicationCommand):
             raise discord.InvalidArgument("Expected an ApplicationCommand instance")
         r = await self.client.http.request(
-            Route("POST", "/applications/{application_id}/commands", application_id=self.application_id),
+            Route(
+                "POST",
+                "/applications/{application_id}/commands",
+                application_id=self.application_id,
+            ),
             json=app_command.to_dict(),
         )
         sc = application_command_factory(r)
@@ -565,7 +586,9 @@ class InteractionClient:
         """
 
         if not all(isinstance(sc, ApplicationCommand) for sc in app_commands):
-            raise discord.InvalidArgument("app_commands must contain only ApplicationCommand instances")
+            raise discord.InvalidArgument(
+                "app_commands must contain only ApplicationCommand instances"
+            )
         await self.client.http.request(
             Route("PUT", "/applications/{app_id}/commands", app_id=self.application_id),
             json=[sc.to_dict() for sc in app_commands],
@@ -575,7 +598,9 @@ class InteractionClient:
         self._global_commands = {cmd.id: cmd for cmd in new_commands}
         return new_commands
 
-    async def overwrite_guild_commands(self, guild_id: int, app_commands: List[ApplicationCommand]):
+    async def overwrite_guild_commands(
+        self, guild_id: int, app_commands: List[ApplicationCommand]
+    ):
         """
         Bulk overwrites all guild application commands
 
@@ -587,7 +612,9 @@ class InteractionClient:
         app_commands : List[ApplicationCommand]
         """
         if not all(isinstance(sc, ApplicationCommand) for sc in app_commands):
-            raise discord.InvalidArgument("app_commands must contain only ApplicationCommand instances")
+            raise discord.InvalidArgument(
+                "app_commands must contain only ApplicationCommand instances"
+            )
         await self.client.http.request(
             Route(
                 "PUT",
@@ -601,7 +628,9 @@ class InteractionClient:
         new_commands = await self.fetch_guild_commands(guild_id)
         self._guild_commands[guild_id] = {cmd.id: cmd for cmd in new_commands}
 
-    async def edit_global_command(self, command_id: int, app_command: ApplicationCommand, **kwargs):
+    async def edit_global_command(
+        self, command_id: int, app_command: ApplicationCommand, **kwargs
+    ):
         """
         Edits a global application command
 
@@ -615,7 +644,12 @@ class InteractionClient:
             raise discord.InvalidArgument("parameter app_command must be ApplicationCommand")
         ignore_name = kwargs.get("ignore_name", False)
         r = await self.client.http.request(
-            Route("PATCH", "/applications/{app_id}/commands/{cmd_id}", app_id=self.application_id, cmd_id=command_id),
+            Route(
+                "PATCH",
+                "/applications/{app_id}/commands/{cmd_id}",
+                app_id=self.application_id,
+                cmd_id=command_id,
+            ),
             json=app_command.to_dict(hide_name=ignore_name),
         )
         # Update cache
@@ -623,7 +657,9 @@ class InteractionClient:
         self._global_commands[sc.id] = sc
         return sc
 
-    async def edit_guild_command(self, guild_id: int, command_id: int, app_command: ApplicationCommand, **kwargs):
+    async def edit_guild_command(
+        self, guild_id: int, command_id: int, app_command: ApplicationCommand, **kwargs
+    ):
         """
         Edits the local application command
 
@@ -661,7 +697,12 @@ class InteractionClient:
         command_id : int
         """
         await self.client.http.request(
-            Route("DELETE", "/applications/{app_id}/commands/{cmd_id}", app_id=self.application_id, cmd_id=command_id)
+            Route(
+                "DELETE",
+                "/applications/{app_id}/commands/{cmd_id}",
+                app_id=self.application_id,
+                cmd_id=command_id,
+            )
         )
         # Update cache
         self._remove_global_command(command_id)
@@ -861,7 +902,9 @@ class InteractionClient:
         if cmd is not None:
             await self.edit_global_command(cmd.id, app_command)
 
-    async def edit_guild_command_named(self, guild_id: int, name: str, app_command: ApplicationCommand):
+    async def edit_guild_command_named(
+        self, guild_id: int, name: str, app_command: ApplicationCommand
+    ):
         """
         Edits a local command matching the specified name.
 
@@ -929,7 +972,9 @@ class InteractionClient:
             if command_id in granula:
                 del granula[command_id]
 
-    def _set_permissions(self, guild_id: int, command_id: int, permissions: ApplicationCommandPermissions):
+    def _set_permissions(
+        self, guild_id: int, command_id: int, permissions: ApplicationCommandPermissions
+    ):
         if guild_id in self._guild_commands:
             granula = self._guild_commands[guild_id]
             if command_id in granula:
@@ -1021,7 +1066,9 @@ class InteractionClient:
                         guilds[guild_id].append(cmd.registerable)
         return global_cmds, guilds
 
-    def _modify_parser(self, parsers: Dict[str, Callable[..., Any]], event: str, func: Callable[[Any], Any]):
+    def _modify_parser(
+        self, parsers: Dict[str, Callable[..., Any]], event: str, func: Callable[[Any], Any]
+    ):
         def empty_func(data):
             pass
 
@@ -1090,7 +1137,9 @@ class InteractionClient:
                     patched_guilds.append(guild_id)
                 except Exception as e:
                     if self._show_warnings:
-                        print(f"[WARNING] Failed to overwrite commands in <Guild id={guild_id}> due to {e}")
+                        print(
+                            f"[WARNING] Failed to overwrite commands in <Guild id={guild_id}> due to {e}"
+                        )
         # Dispatch an event
         self.dispatch("auto_register", global_commands_patched, patched_guilds)
 
@@ -1134,7 +1183,9 @@ class InteractionClient:
                 pass
 
     # Special waiter
-    async def wait_for_button_click(self, check: Callable[..., bool] = None, timeout: float = None):
+    async def wait_for_button_click(
+        self, check: Callable[..., bool] = None, timeout: float = None
+    ):
         if check is None:
             check = lambda ctx: True
         future = self.client.loop.create_future()
@@ -1241,7 +1292,9 @@ class InteractionClient:
     async def _on_connect(self):
         if not isinstance(self.client, discord.AutoShardedClient):
             if self._uses_discord_2:
-                self._modify_parser(self.client.ws._discord_parsers, "INTERACTION_CREATE", self._on_raw_interaction)
+                self._modify_parser(
+                    self.client.ws._discord_parsers, "INTERACTION_CREATE", self._on_raw_interaction
+                )
             await self._fill_app_id()
             await self._cache_global_commands()
             await self._cache_guild_commands()
@@ -1407,7 +1460,11 @@ class InteractionClient:
             if (cmd := self.slash_commands.get(inter.data.name)) is not None:
                 for cmd_option in cmd.options:
                     if cmd_option.name == option.name:
-                        choices = [choice for choice in cmd_option.choices if option.value.lower() in choice.lower()]
+                        choices = [
+                            choice
+                            for choice in cmd_option.choices
+                            if option.value.lower() in choice.lower()
+                        ]
                         await inter.create_response(type=8, _autocomplete_choices=choices[:25])
                         self.dispatch("app_command_autocomplete", inter)
                         break

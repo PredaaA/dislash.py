@@ -1,7 +1,18 @@
 import asyncio
 import inspect
 from enum import EnumMeta
-from typing import Any, Awaitable, Callable, Dict, List, Literal, Optional, Tuple, Union, get_origin
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Union,
+    get_origin,
+)
 
 from ..interactions import (
     InteractionDataOption,
@@ -19,7 +30,9 @@ from .core import InvokableApplicationCommand, class_name
 __all__ = ("SubCommand", "SubCommandGroup", "CommandParent", "slash_command", "command")
 
 
-def fix_required(func: Callable, options: List[Option], connectors: Dict[str, str] = None) -> List[Option]:
+def fix_required(
+    func: Callable, options: List[Option], connectors: Dict[str, str] = None
+) -> List[Option]:
     """Add a required to every option that doesn't have one"""
     connectors = connectors or {}
 
@@ -52,7 +65,9 @@ def extract_options(func: Callable) -> Tuple[List[Option], Dict[str, str]]:
             if d.name is not None:
                 connectors[d.name] = param.name
         else:
-            option = Option(param.name, "-", type=option_type, required=param.default is empty, choices=choices)
+            option = Option(
+                param.name, "-", type=option_type, required=param.default is empty, choices=choices
+            )
 
         options.append(option)
 
@@ -84,7 +99,12 @@ def parse_annotation(annotation: Any) -> Tuple[int, Optional[List[OptionChoice]]
 
 class BaseSlashCommand(InvokableApplicationCommand):
     def __init__(
-        self, func: Callable[..., Awaitable], *, name: str = None, connectors: Dict[str, str] = None, **kwargs
+        self,
+        func: Callable[..., Awaitable],
+        *,
+        name: str = None,
+        connectors: Dict[str, str] = None,
+        **kwargs,
     ):
         super().__init__(func, name=name, **kwargs)
         self.connectors = connectors
@@ -99,7 +119,10 @@ class BaseSlashCommand(InvokableApplicationCommand):
             return argcount > 1
 
     async def _maybe_cog_call(
-        self, cog: Any, inter: SlashInteraction, data: Union[SlashInteractionData, InteractionDataOption]
+        self,
+        cog: Any,
+        inter: SlashInteraction,
+        data: Union[SlashInteractionData, InteractionDataOption],
     ):
         kwargs = data._to_dict_values(self.connectors) if self._uses_ui(cog) else {}
         if isinstance(self, (CommandParent, SubCommandGroup)) and self.children:
@@ -167,14 +190,18 @@ class SubCommand(BaseSlashCommand):
             else:
                 self.connectors = connectors
 
-        self.option = Option(name=self.name, description=description or "-", type=Type.SUB_COMMAND, options=options)
+        self.option = Option(
+            name=self.name, description=description or "-", type=Type.SUB_COMMAND, options=options
+        )
 
 
 class SubCommandGroup(BaseSlashCommand):
     def __init__(self, func: Callable[..., Awaitable], *, name: str = None, **kwargs):
         super().__init__(func, name=name, **kwargs)
         self.children: Dict[str, SubCommand] = {}
-        self.option = Option(name=self.name, description="-", type=Type.SUB_COMMAND_GROUP, options=[])
+        self.option = Option(
+            name=self.name, description="-", type=Type.SUB_COMMAND_GROUP, options=[]
+        )
 
     def sub_command(
         self,
@@ -193,7 +220,12 @@ class SubCommandGroup(BaseSlashCommand):
 
         def decorator(func):
             new_func = SubCommand(
-                func, name=name, description=description, options=options, connectors=connectors, **kwargs
+                func,
+                name=name,
+                description=description,
+                options=options,
+                connectors=connectors,
+                **kwargs,
             )
             self.children[new_func.name] = new_func
             self.option.options.append(new_func.option)
@@ -279,7 +311,12 @@ class CommandParent(BaseSlashCommand):
                 self.child_type = Type.SUB_COMMAND
 
             new_func = SubCommand(
-                func, name=name, description=description, options=options, connectors=connectors, **kwargs
+                func,
+                name=name,
+                description=description,
+                options=options,
+                connectors=connectors,
+                **kwargs,
             )
             self.children[new_func.name] = new_func
             self.registerable.options.append(new_func.option)
@@ -327,7 +364,11 @@ class CommandParent(BaseSlashCommand):
 
         if group is not None:
             option = option.option_at(0)
-            subcmd = None if option is None or isinstance(group, SubCommand) else group.children.get(option.name)
+            subcmd = (
+                None
+                if option is None or isinstance(group, SubCommand)
+                else group.children.get(option.name)
+            )
         if group is not None:
             interaction.invoked_with += f" {group.name}"
             interaction.sub_command_group = group

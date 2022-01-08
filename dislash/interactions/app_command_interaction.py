@@ -76,7 +76,7 @@ class Resolved:
             return self.channels[any_id]
         if any_id in self.messages:
             return self.messages[any_id]
-        
+
         return None
 
 
@@ -127,12 +127,17 @@ class InteractionDataOption:
             self.value = resolved.get(self.value, self.value)
         # Converting sub options
         self.options: Dict[str, InteractionDataOption] = {
-            o["name"]: InteractionDataOption(data=o, resolved=resolved) for o in data.get("options", [])
+            o["name"]: InteractionDataOption(data=o, resolved=resolved)
+            for o in data.get("options", [])
         }
         self.focused: bool = data.get("focused", False)
 
     def __repr__(self):
-        return "<InteractionDataOption name='{0.name}' value={0.value} options={0.options}>".format(self)
+        return (
+            "<InteractionDataOption name='{0.name}' value={0.value} options={0.options}>".format(
+                self
+            )
+        )
 
     def _to_dict_values(self, connectors: Dict[str, str] = None) -> Dict[str, Any]:
         connectors = connectors or {}
@@ -147,7 +152,7 @@ class InteractionDataOption:
         opt = self.option_at(0)
         if opt is not None and opt.type == 1:
             return opt
-        
+
         return None
 
     def get_focused_option(self) -> Optional[InteractionDataOption]:
@@ -156,7 +161,7 @@ class InteractionDataOption:
                 return option
             if option.value is None:
                 return option.get_focused_option()
-        
+
         return None
 
     def get_option(self, name: str) -> Optional[InteractionDataOption]:
@@ -174,7 +179,9 @@ class InteractionDataOption:
         """
         return self.options.get(name)
 
-    def get(self, name: str, default: Any = None) -> Union[InteractionDataOption, Any]:  # put T here maybe
+    def get(
+        self, name: str, default: Any = None
+    ) -> Union[InteractionDataOption, Any]:  # put T here maybe
         """
         Get the value of an option with the specified name
 
@@ -220,11 +227,14 @@ class SlashInteractionData(ApplicationCommandInteractionData):
     def __init__(self, *, data, guild, state):
         super().__init__(data=data, guild=guild, state=state)
         self.options = {
-            o["name"]: InteractionDataOption(data=o, resolved=self.resolved) for o in data.get("options", [])
+            o["name"]: InteractionDataOption(data=o, resolved=self.resolved)
+            for o in data.get("options", [])
         }
 
     def __repr__(self) -> str:
-        return "<SlashInteractionData id={0.id} type={0.type} name={0.name!r} options={0.options!r}>".format(self)
+        return "<SlashInteractionData id={0.id} type={0.type} name={0.name!r} options={0.options!r}>".format(
+            self
+        )
 
     def __getitem__(self, key: str) -> Optional[InteractionDataOption]:
         if isinstance(key, str):
@@ -232,7 +242,9 @@ class SlashInteractionData(ApplicationCommandInteractionData):
         elif isinstance(key, int):
             opt = self.option_at(key)
         else:
-            raise TypeError(f"unsupported key type. Expected str or int, but received {type(key)} instead")
+            raise TypeError(
+                f"unsupported key type. Expected str or int, but received {type(key)} instead"
+            )
         if opt is None:
             return None
         return opt.value if opt.type > 2 else opt
@@ -252,7 +264,9 @@ class SlashInteractionData(ApplicationCommandInteractionData):
                 if data_option is None:
                     continue
                 if len(option._choice_connectors) > 0:
-                    data_option.value = option._choice_connectors.get(data_option.value, data_option.value)
+                    data_option.value = option._choice_connectors.get(
+                        data_option.value, data_option.value
+                    )
                 recursive_wrapper(data_option, option)
 
         recursive_wrapper(self, slash_command)
@@ -275,7 +289,7 @@ class SlashInteractionData(ApplicationCommandInteractionData):
                 return option
             if option.value is None:
                 return option.get_focused_option()
-        
+
         return None
 
     def get_option(self, name: str) -> Optional[InteractionDataOption]:
@@ -341,7 +355,8 @@ class ContextMenuInteractionData(ApplicationCommandInteractionData):
 
     def __repr__(self):
         return (
-            f"<ContextMenuInteractionData id={self.id} type={self.type} " f"name={self.name!r} target={self.target!r}>"
+            f"<ContextMenuInteractionData id={self.id} type={self.type} "
+            f"name={self.name!r} target={self.target!r}>"
         )
 
     @property
@@ -385,7 +400,9 @@ class SlashInteraction(BaseInteraction):
 
         state = client._connection
         self.prefix: str = "/"  # Just in case
-        self.data = SlashInteractionData(data=payload.get("data", {}), guild=self.guild, state=state)
+        self.data = SlashInteractionData(
+            data=payload.get("data", {}), guild=self.guild, state=state
+        )
         self.invoked_with = self.data.name
         # what's this???
         self.slash_command: Optional[Any] = None
@@ -439,7 +456,9 @@ class SlashInteraction(BaseInteraction):
 class ContextMenuInteraction(BaseInteraction):
     def __init__(self, client, payload):
         super().__init__(client, payload)
-        self.data = ContextMenuInteractionData(data=payload.get("data", {}), guild=self.guild, state=client._connection)
+        self.data = ContextMenuInteractionData(
+            data=payload.get("data", {}), guild=self.guild, state=client._connection
+        )
         self.user_command: Optional[Any] = None
         self.message_command: Optional[Any] = None
 

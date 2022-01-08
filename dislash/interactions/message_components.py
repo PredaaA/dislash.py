@@ -6,7 +6,15 @@ from typing import cast, Iterable, List, Optional, Union
 import discord
 from discord import PartialEmoji
 
-from .types import ActionRowPayload, ComponentPayload, SelectMenuPayload, SelectOptionPayload, ButtonStyle, ButtonPayload, ComponentType
+from .types import (
+    ActionRowPayload,
+    ComponentPayload,
+    SelectMenuPayload,
+    SelectOptionPayload,
+    ButtonStyle,
+    ButtonPayload,
+    ComponentType,
+)
 
 __all__ = (
     "auto_rows",
@@ -85,10 +93,7 @@ def auto_rows(*buttons: Button, max_in_row: int = 5) -> List[ActionRow]:
     """
     if not (1 <= max_in_row <= 5):
         raise discord.InvalidArgument("max_in_row parameter should be between 1 and 5.")
-    return [
-        ActionRow(*buttons[i : i + max_in_row]) for i
-        in range(0, len(buttons), max_in_row)
-    ]
+    return [ActionRow(*buttons[i : i + max_in_row]) for i in range(0, len(buttons), max_in_row)]
 
 
 class SelectOption:
@@ -270,11 +275,7 @@ class SelectMenu(Component):
         """
         self.options.append(
             SelectOption(
-                label=label,
-                value=value,
-                description=description,
-                emoji=emoji,
-                default=default
+                label=label, value=value, description=description, emoji=emoji, default=default
             )
         )
 
@@ -285,10 +286,7 @@ class SelectMenu(Component):
             placeholder=data.get("placeholder"),
             min_values=data.get("min_values", 1),
             max_values=data.get("max_values", 1),
-            options=[
-                SelectOption.from_dict(o) for o
-                in data.get("options", [])
-            ],
+            options=[SelectOption.from_dict(o) for o in data.get("options", [])],
             disabled=data.get("disabled", False),
         )
 
@@ -352,7 +350,9 @@ class Button(Component):
                 custom_id = str(ID_SOURCE)
                 ID_SOURCE = (ID_SOURCE + 1) % MAX_ID
             elif style != ButtonStyle.link:
-                raise discord.InvalidArgument("if you specify url, the style must be ButtonStyle.link")
+                raise discord.InvalidArgument(
+                    "if you specify url, the style must be ButtonStyle.link"
+                )
         elif url is not None:
             raise discord.InvalidArgument("you can't specify both url and custom_id")
         elif style == ButtonStyle.link:
@@ -428,7 +428,9 @@ class ActionRow(Component):
     def __init__(self, *components: Component):
         self._limit = 5
         if len(components) > self._limit:
-            raise discord.InvalidArgument(f"components must be a list of up to {self._limit} elements")
+            raise discord.InvalidArgument(
+                f"components must be a list of up to {self._limit} elements"
+            )
         if not all(isinstance(comp, Component) for comp in components):
             raise discord.InvalidArgument("components must be a list of Component")
 

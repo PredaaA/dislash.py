@@ -2,32 +2,25 @@ from discord import (
     InvalidArgument,
     AllowedMentions,
     File,
-    GuildSticker, StickerItem,
+    GuildSticker,
+    StickerItem,
     Embed,
-    Message, MessageReference, PartialMessage, MessageFlags,
-    Attachment
+    Message,
+    MessageReference,
+    PartialMessage,
+    MessageFlags,
+    Attachment,
 )
 
 from discord.ui import View
 from discord.utils import MISSING
 
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    overload
-)
+from typing import Any, Dict, List, Optional, Sequence, Union, overload
 
 from ...interactions import ActionRow
 
 
-__all__ = (
-    "send",
-    "edit"
-)
+__all__ = ("send", "edit")
 
 
 @overload
@@ -223,14 +216,14 @@ async def send(
     _components = None
 
     if embed is not None and embeds is not None:
-        raise InvalidArgument('cannot pass both embed and embeds parameter to send()')
+        raise InvalidArgument("cannot pass both embed and embeds parameter to send()")
 
     if embed is not None:
         embed = embed.to_dict()
 
     elif embeds is not None:
         if len(embeds) > 10:
-            raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
+            raise InvalidArgument("embeds parameter must be a list of up to 10 elements")
         embeds = [embed.to_dict() for embed in embeds]
 
     if stickers is not None:
@@ -245,17 +238,19 @@ async def send(
         allowed_mentions = allowed_mentions.to_dict()
     if mention_author is not None:
         allowed_mentions = allowed_mentions or AllowedMentions().to_dict()
-        allowed_mentions['replied_user'] = bool(mention_author)
+        allowed_mentions["replied_user"] = bool(mention_author)
 
     if reference is not None:
         try:
             reference = reference.to_message_reference_dict()
         except AttributeError:
-            raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
+            raise InvalidArgument(
+                "reference parameter must be Message, MessageReference, or PartialMessage"
+            ) from None
 
     if view:
-        if not hasattr(view, '__discord_ui_view__'):
-            raise InvalidArgument(f'view parameter must be View not {view.__class__!r}')
+        if not hasattr(view, "__discord_ui_view__"):
+            raise InvalidArgument(f"view parameter must be View not {view.__class__!r}")
 
         _components = view.to_components()
     else:
@@ -277,11 +272,11 @@ async def send(
             components.append(comp.to_dict())
 
     if file is not None and files is not None:
-        raise InvalidArgument('cannot pass both file and files parameter to send()')
+        raise InvalidArgument("cannot pass both file and files parameter to send()")
 
     if file is not None:
         if not isinstance(file, File):
-            raise InvalidArgument('file parameter must be File')
+            raise InvalidArgument("file parameter must be File")
 
         try:
             data = await state.http.send_files(
@@ -302,9 +297,9 @@ async def send(
 
     elif files is not None:
         if len(files) > 10:
-            raise InvalidArgument('files parameter must be a list of up to 10 elements')
+            raise InvalidArgument("files parameter must be a list of up to 10 elements")
         elif not all(isinstance(file, File) for file in files):
-            raise InvalidArgument('files parameter must be a list of File')
+            raise InvalidArgument("files parameter must be a list of File")
 
         try:
             data = await state.http.send_files(
@@ -451,31 +446,33 @@ async def edit(
     _components = None
     payload: Dict[str, Any] = {}
     if content is not MISSING:
-        payload['content'] = str(content) if content is not None else None
+        payload["content"] = str(content) if content is not None else None
     if embed is not MISSING and embeds is not MISSING:
-        raise InvalidArgument('cannot pass both embed and embeds parameter to edit()')
+        raise InvalidArgument("cannot pass both embed and embeds parameter to edit()")
 
     if embed is not MISSING:
-        payload['embeds'] = [] if embed is None else [embed.to_dict()]
+        payload["embeds"] = [] if embed is None else [embed.to_dict()]
     elif embeds is not MISSING:
-        payload['embeds'] = [e.to_dict() for e in embeds]
+        payload["embeds"] = [e.to_dict() for e in embeds]
 
     if suppress is not MISSING:
         flags = MessageFlags._from_value(self.flags.value)
         flags.suppress_embeds = suppress
-        payload['flags'] = flags.value
+        payload["flags"] = flags.value
 
     if allowed_mentions is MISSING:
         if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
-            payload['allowed_mentions'] = self._state.allowed_mentions.to_dict()
+            payload["allowed_mentions"] = self._state.allowed_mentions.to_dict()
     elif allowed_mentions is not None:
         if self._state.allowed_mentions is not None:
-            payload['allowed_mentions'] = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+            payload["allowed_mentions"] = self._state.allowed_mentions.merge(
+                allowed_mentions
+            ).to_dict()
         else:
-            payload['allowed_mentions'] = allowed_mentions.to_dict()
+            payload["allowed_mentions"] = allowed_mentions.to_dict()
 
     if attachments is not MISSING:
-        payload['attachments'] = [a.to_dict() for a in attachments]
+        payload["attachments"] = [a.to_dict() for a in attachments]
 
     if view is not MISSING:
         self._state.prevent_view_updates_for(self.id)

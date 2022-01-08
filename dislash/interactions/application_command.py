@@ -36,7 +36,7 @@ __all__ = (
     "Type",
 )
 
-T_StrFloat = TypeVar('T_StrFloat', str, float)
+T_StrFloat = TypeVar("T_StrFloat", str, float)
 
 
 def application_command_factory(data: ApplicationCommandPayload) -> ApplicationCommand:
@@ -97,7 +97,16 @@ class Option:
         the ``type`` is :class:`Type.SUB_COMMAND` or :class:`Type.SUB_COMMAND_GROUP`
     """
 
-    __slots__ = ("name", "description", "type", "required", "autocomplete", "choices", "options", "_choice_connectors")
+    __slots__ = (
+        "name",
+        "description",
+        "type",
+        "required",
+        "autocomplete",
+        "choices",
+        "options",
+        "_choice_connectors",
+    )
 
     name: str
     description: Optional[str]
@@ -150,7 +159,9 @@ class Option:
                     choice.value = valid_value
 
     def __repr__(self) -> str:
-        string = "name='{0.name}' description='{0.description}' type={0.type} required={0.required}".format(self)
+        string = "name='{0.name}' description='{0.description}' type={0.type} required={0.required}".format(
+            self
+        )
         if self.options:
             string += " options={self.options}"
         if self.choices:
@@ -176,14 +187,8 @@ class Option:
             type=payload["type"],
             required=payload.get("required", False),
             autocomplete=payload.get("autocomplete", False),
-            options=[
-                Option.from_dict(p) for p
-                in payload.get("options", ())
-            ],
-            choices=[
-                OptionChoice(**p) for p
-                in payload.get("choices", ())
-            ],
+            options=[Option.from_dict(p) for p in payload.get("options", ())],
+            choices=[OptionChoice(**p) for p in payload.get("choices", ())],
         )
 
     def add_choice(self, name: str, value: Any) -> None:
@@ -230,7 +235,15 @@ class Option:
             if type != 1:
                 raise ValueError("Expected sub_command in this sub_command_group")
         self.options.append(
-            Option(name=name, description=description, type=type, required=required, autocomplete=autocomplete, choices=choices, options=options)
+            Option(
+                name=name,
+                description=description,
+                type=type,
+                required=required,
+                autocomplete=autocomplete,
+                choices=choices,
+                options=options,
+            )
         )
 
     def to_dict(self) -> OptionPayload:
@@ -246,10 +259,7 @@ class Option:
             ]
             if self.autocomplete is False
             else [],
-            options=[
-                option.to_dict() for
-                option in self.options
-            ],
+            options=[option.to_dict() for option in self.options],
         )
 
 
@@ -328,7 +338,7 @@ def option_param(
 
 def option_enum(choices: Dict[str, T_StrFloat], **kwargs: T_StrFloat) -> Enum:
     choices = choices or kwargs
-    return Enum('', choices, type=type(next(iter(choices.values()))))
+    return Enum("", choices, type=type(next(iter(choices.values()))))
 
 
 class ApplicationCommand(ABC):
@@ -360,7 +370,7 @@ class ApplicationCommand(ABC):
 
 class UserCommand(ApplicationCommand):
     def __init__(self, name: str, **kwargs: Any) -> None:
-        kwargs.pop('type', 0)
+        kwargs.pop("type", 0)
         super().__init__(ApplicationCommandType.USER, **kwargs)
         self.name = name
 
@@ -383,7 +393,7 @@ class UserCommand(ApplicationCommand):
 
 class MessageCommand(ApplicationCommand):
     def __init__(self, name: str, **kwargs: Any) -> None:
-        kwargs.pop('type', 0)
+        kwargs.pop("type", 0)
         super().__init__(ApplicationCommandType.MESSAGE, **kwargs)
         self.name = name
 
@@ -432,7 +442,7 @@ class SlashCommand(ApplicationCommand):
         default_permission: bool = True,
         **kwargs: Any,
     ) -> None:
-        kwargs.pop('type', 0)
+        kwargs.pop("type", 0)
         super().__init__(ApplicationCommandType.CHAT_INPUT, **kwargs)
 
         assert (
@@ -446,7 +456,9 @@ class SlashCommand(ApplicationCommand):
         self.permissions = SlashCommandPermissions()
 
     def __repr__(self) -> str:
-        return "<SlashCommand name='{0.name}' description='{0.description}' options={0.options}>".format(self)
+        return "<SlashCommand name='{0.name}' description='{0.description}' options={0.options}>".format(
+            self
+        )
 
     def __eq__(self, other):  # type: ignore
         return (
@@ -459,7 +471,9 @@ class SlashCommand(ApplicationCommand):
     @classmethod
     def from_dict(cls, payload: SlashCommandPayload) -> SlashCommand:
         if payload.get("type", 1) != ApplicationCommandType.CHAT_INPUT:
-            raise ValueError(f"{cls.__name__} type can be only {ApplicationCommandType.CHAT_INPUT}")
+            raise ValueError(
+                f"{cls.__name__} type can be only {ApplicationCommandType.CHAT_INPUT}"
+            )
 
         options = payload.pop("options", [])
         return SlashCommand(
@@ -468,9 +482,7 @@ class SlashCommand(ApplicationCommand):
             description=payload["description"],
             type=payload["type"],
             default_permission=payload.get("default_permission", True),
-            options=[
-                Option.from_dict(p) for p in options
-            ],
+            options=[Option.from_dict(p) for p in options],
         )
 
     def add_option(
@@ -494,7 +506,7 @@ class SlashCommand(ApplicationCommand):
                 type=type,
                 required=required,
                 choices=choices,
-                options=options
+                options=options,
             )
         )
 
@@ -537,7 +549,9 @@ class ApplicationCommandPermissions:
         return "<{0.__name__} permissions={0.permissions!r}>".format(self)
 
     @classmethod
-    def from_pairs(cls, permissions: Dict[Union[discord.Role, discord.User], bool]) -> ApplicationCommandPermissions:
+    def from_pairs(
+        cls, permissions: Dict[Union[discord.Role, discord.User], bool]
+    ) -> ApplicationCommandPermissions:
         """
         Creates :class:`ApplicationCommandPermissions` using
         instances of :class:`discord.Role` and :class:`discord.User`
@@ -547,7 +561,9 @@ class ApplicationCommandPermissions:
         permissions : :class:`dict`
             a dictionary of {:class:`Role | User`: :class:`bool`}
         """
-        raw_perms = [RawCommandPermission.from_pair(target, perm) for target, perm in permissions.items()]
+        raw_perms = [
+            RawCommandPermission.from_pair(target, perm) for target, perm in permissions.items()
+        ]
 
         return ApplicationCommandPermissions(raw_perms)
 
@@ -570,15 +586,21 @@ class ApplicationCommandPermissions:
         """
         role_perms = role_perms or {}
         user_perms = user_perms or {}
-        raw_perms = [RawCommandPermission(role_id, 1, perm) for role_id, perm in role_perms.items()]
+        raw_perms = [
+            RawCommandPermission(role_id, 1, perm) for role_id, perm in role_perms.items()
+        ]
 
         for user_id, perm in user_perms.items():
             raw_perms.append(RawCommandPermission(user_id, 2, perm))
         return ApplicationCommandPermissions(raw_perms)
 
     @classmethod
-    def from_dict(cls, data: ApplicationCommandPermissionsPayload) -> ApplicationCommandPermissions:
-        return SlashCommandPermissions([RawCommandPermission.from_dict(perm) for perm in data["permissions"]])
+    def from_dict(
+        cls, data: ApplicationCommandPermissionsPayload
+    ) -> ApplicationCommandPermissions:
+        return SlashCommandPermissions(
+            [RawCommandPermission.from_dict(perm) for perm in data["permissions"]]
+        )
 
     def to_dict(self) -> ApplicationCommandPermissionsPayload:
         return {"permissions": [perm.to_dict() for perm in self.permissions]}
@@ -610,10 +632,14 @@ class RawCommandPermission:
         self.permission = permission
 
     def __repr__(self) -> str:
-        return "<RawCommandPermission id={0.id} type={0.type} permission={0.permission}>".format(self)
+        return "<RawCommandPermission id={0.id} type={0.type} permission={0.permission}>".format(
+            self
+        )
 
     @classmethod
-    def from_pair(cls, target: Union[discord.Role, discord.User], permission: bool) -> RawCommandPermission:
+    def from_pair(
+        cls, target: Union[discord.Role, discord.User], permission: bool
+    ) -> RawCommandPermission:
         if not isinstance(target, (discord.Role, discord.User)):
             raise discord.InvalidArgument("target should be Role or User")
         if not isinstance(permission, bool):

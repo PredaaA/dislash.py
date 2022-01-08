@@ -288,7 +288,8 @@ def has_any_role(*items: Union[int, str]):
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
         if any(
-            getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items
+            getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None
+            for item in items
         ):
             return True
         raise MissingAnyRole(items)
@@ -327,7 +328,8 @@ def bot_has_any_role(*items: Union[int, str]):
         me = ch.guild.me
         getter = functools.partial(discord.utils.get, me.roles)
         if any(
-            getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items
+            getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None
+            for item in items
         ):
             return True
         raise BotMissingAnyRole(items)

@@ -126,7 +126,9 @@ class MissingPermissions(InteractionCheckFailure):
     def __init__(self, missing_perms, *args):
         self.missing_perms = missing_perms
 
-        missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in missing_perms]
+        missing = [
+            perm.replace("_", " ").replace("guild", "server").title() for perm in missing_perms
+        ]
 
         if len(missing) > 2:
             fmt = "{}, and {}".format(", ".join(missing[:-1]), missing[-1])
@@ -140,7 +142,9 @@ class BotMissingPermissions(InteractionCheckFailure):
     def __init__(self, missing_perms, *args):
         self.missing_perms = missing_perms
 
-        missing = [perm.replace("_", " ").replace("guild", "server").title() for perm in missing_perms]
+        missing = [
+            perm.replace("_", " ").replace("guild", "server").title() for perm in missing_perms
+        ]
 
         if len(missing) > 2:
             fmt = "{}, and {}".format(", ".join(missing[:-1]), missing[-1])

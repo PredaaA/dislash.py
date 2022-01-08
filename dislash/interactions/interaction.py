@@ -67,9 +67,11 @@ class BaseInteraction:
         self.guild_id: Optional[int]
         self.guild: Optional[discord.Guild]
         self.channel_id: Optional[int]
-        self.channel: Optional[Union[discord.abc.GuildChannel, discord.abc.Thread, discord.abc.PrivateChannel]]
+        self.channel: Optional[
+            Union[discord.abc.GuildChannel, discord.abc.Thread, discord.abc.PrivateChannel]
+        ]
         self.author: Union[discord.User, discord.Member]
-        
+
         if "guild_id" in data:
             self.guild_id = int(data["guild_id"])
             self.guild = client.get_guild(self.guild_id)
@@ -112,8 +114,7 @@ class BaseInteraction:
     @property
     def me(self) -> Union[Member, ClientUser]:
         return self.guild.me if self.guild is not None else self.bot.user
-    
-    
+
     async def acknowledge(self):
         """
         ~For buttons~
@@ -122,8 +123,6 @@ class BaseInteraction:
         """
         await self.reply(type=6)
 
-
-
     async def defer(self):
         """
         Creates and initial response to the interaction giving a 'bot is thinking' state.
@@ -131,7 +130,6 @@ class BaseInteraction:
         If you use defer(), use edit() instead of reply() to make the next response.
         """
         await self.reply(type=5)
-
 
     async def reply(
         self,
@@ -266,7 +264,7 @@ class BaseInteraction:
         ephemeral: bool = False,
         tts: bool = False,
         allowed_mentions=None,
-        _autocomplete_choices=None
+        _autocomplete_choices=None,
     ):
         """
         Creates an interaction response.
@@ -304,7 +302,9 @@ class BaseInteraction:
         data: Any = {}
 
         if type == 8:
-            data["choices"] = [{"name": choice, "value": choice} for choice in _autocomplete_choices]
+            data["choices"] = [
+                {"name": choice, "value": choice} for choice in _autocomplete_choices
+            ]
         else:
             if content is not None:
                 data["content"] = str(content)
@@ -319,14 +319,20 @@ class BaseInteraction:
 
             elif embeds is not None:
                 if len(embeds) > 10:
-                    raise discord.InvalidArgument("embds parameter must be a list of up to 10 elements")
+                    raise discord.InvalidArgument(
+                        "embds parameter must be a list of up to 10 elements"
+                    )
                 elif not all(isinstance(embed, discord.Embed) for embed in embeds):
-                    raise discord.InvalidArgument("embeds parameter must be a list of discord.Embed")
+                    raise discord.InvalidArgument(
+                        "embeds parameter must be a list of discord.Embed"
+                    )
                 data["embeds"] = [embed.to_dict() for embed in embeds]
 
             if view is not None:
                 if not hasattr(view, "__discord_ui_view__"):
-                    raise discord.InvalidArgument(f"view parameter must be View not {view.__class__!r}")
+                    raise discord.InvalidArgument(
+                        f"view parameter must be View not {view.__class__!r}"
+                    )
 
                 _components = view.to_components()
             else:
@@ -334,7 +340,9 @@ class BaseInteraction:
 
             if components is not None:
                 if len(components) > 5:
-                    raise discord.InvalidArgument("components must be a list of up to 5 action rows")
+                    raise discord.InvalidArgument(
+                        "components must be a list of up to 5 action rows"
+                    )
                 _components = _components or []
                 for comp in components:
                     if isinstance(comp, ActionRow):
@@ -364,7 +372,12 @@ class BaseInteraction:
             payload["data"] = data
 
         await self.bot.http.request(
-            Route("POST", "/interactions/{interaction_id}/{token}/callback", interaction_id=self.id, token=self.token),
+            Route(
+                "POST",
+                "/interactions/{interaction_id}/{token}/callback",
+                interaction_id=self.id,
+                token=self.token,
+            ),
             json=payload,
         )
 
@@ -413,7 +426,9 @@ class BaseInteraction:
 
         elif embeds is not None:
             if len(embeds) > 10:
-                raise discord.InvalidArgument("embds parameter must be a list of up to 10 elements")
+                raise discord.InvalidArgument(
+                    "embds parameter must be a list of up to 10 elements"
+                )
             elif not all(isinstance(embed, discord.Embed) for embed in embeds):
                 raise discord.InvalidArgument("embeds parameter must be a list of discord.Embed")
             data["embeds"] = [embed.to_dict() for embed in embeds]
@@ -435,7 +450,10 @@ class BaseInteraction:
         # HTTP-response
         r = await self.bot.http.request(
             Route(
-                "PATCH", "/webhooks/{app_id}/{token}/messages/@original", app_id=self.application_id, token=self.token
+                "PATCH",
+                "/webhooks/{app_id}/{token}/messages/@original",
+                app_id=self.application_id,
+                token=self.token,
             ),
             json=data,
         )
@@ -447,7 +465,10 @@ class BaseInteraction:
         """
         await self.bot.http.request(
             Route(
-                "DELETE", "/webhooks/{app_id}/{token}/messages/@original", app_id=self.application_id, token=self.token
+                "DELETE",
+                "/webhooks/{app_id}/{token}/messages/@original",
+                app_id=self.application_id,
+                token=self.token,
             )
         )
 
@@ -463,7 +484,12 @@ class BaseInteraction:
         Fetches the original interaction response.
         """
         data = await self.bot.http.request(
-            Route("GET", "/webhooks/{app_id}/{token}/messages/@original", app_id=self.application_id, token=self.token)
+            Route(
+                "GET",
+                "/webhooks/{app_id}/{token}/messages/@original",
+                app_id=self.application_id,
+                token=self.token,
+            )
         )
         state = self.bot._connection
         return state.create_message(channel=self.channel, data=data)
@@ -527,7 +553,9 @@ class BaseInteraction:
             data["content"] = str(content)
 
         if embed is not None and embeds is not None:
-            raise discord.InvalidArgument("cannot pass both embed and embeds parameter to followup()")
+            raise discord.InvalidArgument(
+                "cannot pass both embed and embeds parameter to followup()"
+            )
 
         if embed is not None:
             if not isinstance(embed, discord.Embed):
@@ -536,14 +564,18 @@ class BaseInteraction:
 
         elif embeds is not None:
             if len(embeds) > 10:
-                raise discord.InvalidArgument("embds parameter must be a list of up to 10 elements")
+                raise discord.InvalidArgument(
+                    "embds parameter must be a list of up to 10 elements"
+                )
             elif not all(isinstance(embed, discord.Embed) for embed in embeds):
                 raise discord.InvalidArgument("embeds parameter must be a list of discord.Embed")
             data["embeds"] = [embed.to_dict() for embed in embeds]
 
         if view:
             if not hasattr(view, "__discord_ui_view__"):
-                raise discord.InvalidArgument(f"view parameter must be View not {view.__class__!r}")
+                raise discord.InvalidArgument(
+                    f"view parameter must be View not {view.__class__!r}"
+                )
 
             _components = view.to_components()
         else:
@@ -580,7 +612,9 @@ class BaseInteraction:
             data["avatar_url"] = avatar_url
 
         if file is not None and files is not None:
-            raise discord.InvalidArgument("cannot pass both file and files parameter to followup()")
+            raise discord.InvalidArgument(
+                "cannot pass both file and files parameter to followup()"
+            )
 
         if file is not None:
             files = [file]

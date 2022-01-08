@@ -51,8 +51,13 @@ class MessageInteraction(BaseInteraction):
                 msg_data["channel_id"] = self.channel_id
                 channel = self.channel
                 # For some reason "channel_id" in message reference might not be included
-            if "message_reference" in msg_data and "channel_id" not in msg_data["message_reference"]:
-                msg_data["message_reference"]["channel_id"] = None if channel is None else channel.id
+            if (
+                "message_reference" in msg_data
+                and "channel_id" not in msg_data["message_reference"]
+            ):
+                msg_data["message_reference"]["channel_id"] = (
+                    None if channel is None else channel.id
+                )
             # channel must not be None, because channel.id attr is needed in discord.Message.__init__
             self.message = discord.Message(
                 state=state, channel=channel or PartialTextChannel(0), data=msg_data  # type: ignore
@@ -66,7 +71,9 @@ class MessageInteraction(BaseInteraction):
             for component in action_row.components:
                 if component.custom_id == custom_id and component.type == component_type:
                     self.component = component
-                    if component_type == ComponentType.SelectMenu and isinstance(self.component, SelectMenu):
+                    if component_type == ComponentType.SelectMenu and isinstance(
+                        self.component, SelectMenu
+                    ):
                         self.component._select_options(component_data.get("values", []))
                     break
             if self.component is not None:
@@ -84,7 +91,9 @@ class MessageInteraction(BaseInteraction):
 
     @property
     def select_menu(self) -> SelectMenu:
-        if self.component.type == ComponentType.SelectMenu and isinstance(self.component, SelectMenu):
+        if self.component.type == ComponentType.SelectMenu and isinstance(
+            self.component, SelectMenu
+        ):
             return self.component
         return None  # type: ignore
 

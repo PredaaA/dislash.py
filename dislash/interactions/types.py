@@ -6,10 +6,10 @@ from discord import PartialEmoji
 
 
 __all__ = (
-    'OptionType',
-    'ComponentType',
-    'ApplicationCommandType',
-    'ButtonStyle',
+    "OptionType",
+    "ComponentType",
+    "ApplicationCommandType",
+    "ButtonStyle",
 )
 
 
