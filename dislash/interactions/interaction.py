@@ -137,6 +137,9 @@ class BaseInteraction:
     def me(self) -> Union[Member, ClientUser]:
         return self.guild.me if self.guild is not None else self.bot.user
 
+    async def embed_requested(self) -> bool:
+        return True
+
     async def acknowledge(self):
         """
         ~For buttons~
