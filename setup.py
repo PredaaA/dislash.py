@@ -31,7 +31,6 @@ setup(
         "dislash.application_commands._modifications",
     ],
     python_requires=">=3.6, <4",
-    install_requires=requirements,
     project_urls={
         "Documentation": "https://dislashpy.readthedocs.io/en/latest",
         "Bug Reports": "https://github.com/EQUENOS/dislash.py/issues",
