@@ -232,8 +232,21 @@ class BaseInteraction:
                 type = 1 if hide_user_input else 5
             else:
                 type = 3 if hide_user_input else 4
+        if self._sent:
+            return await self.followup(
+                content=content,
+                embed=embed,
+                embeds=embeds,
+                components=components,
+                file=file,
+                files=files,
+                view=view,
+                ephemeral=ephemeral,
+                tts=tts,
+                allowed_mentions=allowed_mentions,
+            )
         # Sometimes we have to use TextChannel.send() instead
-        if self._sent or self.expired or type == 3:
+        if self.expired or type == 3:
             send_kwargs = dict(
                 content=content,
                 embed=embed,
@@ -676,6 +689,7 @@ class BaseInteraction:
                         }
                     )
             try:
+                print(form)
                 data = await self.bot.http.request(route, form=form, files=files)
             finally:
                 for f in files:
