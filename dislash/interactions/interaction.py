@@ -689,7 +689,6 @@ class BaseInteraction:
                         }
                     )
             try:
-                print(form)
                 data = await self.bot.http.request(route, form=form, files=files)
             finally:
                 for f in files:
